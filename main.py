@@ -42,13 +42,12 @@ def generate_frame_images(input_file,framestep=90):
   return directory
 
 def main():
-	pass
-
+  pass
 
 if __name__ == '__main__':
   # Save the current working directory in case our application changes it
   cwd = os.getcwd()
   # Do work
-	main()
-	# Put the user back where they were
-	os.chdir(cwd)
+  main()
+  # Put the user back where they were
+  os.chdir(cwd)
