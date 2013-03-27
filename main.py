@@ -33,13 +33,13 @@ def create_and_enter_working_directory(input_file):
   # Move to the target directory
   os.chdir(directory)
   
-def generate_frame_images(input_file,framestep=90):
+def generate_frame_images(input_file,framestep=90,imagetype="jpeg"):
   """
   Tells mplayer to generate an image of a frame in input_file every framestep
   frames.
   """
-  cmd = "mplayer -framedrop -speed 100 -vf framestep=%i -nosound -vo jpeg %s"
-  cmd = cmd % (framestep,input_file)
+  cmd = "mplayer -framedrop -speed 100 -vf framestep=%i -nosound -vo %s %s"
+  cmd = cmd % (framestep,imagetype,input_file)
   # Run the mplayer command
   os.system(cmd)
   
@@ -47,21 +47,23 @@ def resize(input_file,width=1,height=1):
   """
   Resizes an image to width by height in place
   """
-  pass
+  cmd = "convert %s -resize %ix%i\! %s"
+  cmd = cmd % (input_file,width,height,input_file)
+  os.system(cmd)
   
-def assemble_barcode(output_file):
+def assemble_barcode(output_file,imagetype="jpeg"):
   """
   Converts all of the png files in the current directory into a single 
   moviebarcode.
   """
-  pass
+  os.system("montage -geometry +0+0 -tile x1 *.%s %s" % (imagetype,output_file))
 
 def main(input_file):
   create_and_enter_working_directory(input_file)
   generate_frame_images(input_file)
   for entry in os.listdir("."):
     if os.path.isfile(entry):
-      resize(entry,1,1)
+      resize(entry)
   assemble_barcode("barcode.png")
   
 
@@ -69,7 +71,7 @@ if __name__ == '__main__':
   # Save the current working directory in case our application changes it
   cwd = os.getcwd()
   # Do work
-  # TODO: Take the input_file from the script arguments
-  main("")
+  if len(sys.argv):
+    main(sys.argv[1])
   # Put the user back where they were
   os.chdir(cwd)
