@@ -11,6 +11,9 @@ import sys
 import os
 import shutil
 import random
+import commands
+
+first_filename = "00000000.jpg"
 
 def temp_working_directory():
   """
@@ -34,6 +37,30 @@ def create_and_enter_working_directory(input_file):
   os.makedirs(directory)
   # Move to the target directory
   os.chdir(directory)
+  
+def add_image_height_hack_image():
+  # Get the directory of the executing file
+  directory = os.path.dirname(__file__)
+  hack_location = os.path.join(directory,first_filename)
+  shutil.copy(hack_location,first_filename)
+  
+def get_framerate(input_file):  
+  (status,output) = commands.getstatusoutput("ffprobe %s" % input_file)
+  for l in output:
+    l = l.strip()
+    if l.startswith("Stream"):
+      # We are on the line which has our data, find it!
+      probe_data = l.split(",")
+      for datapoint in probe_data:
+        if datapoint.endswith("fps"):
+          separator_index = datapoint.find(" ")
+          fps = float(datapoint[:separator_index])
+          int_fps = int(fps)
+          if int_fps == fps:
+            return fps
+          else:
+            return int_fps + 1
+  return 24
   
 def generate_frame_images(input_file,framestep=90,imagetype="jpeg"):
   """
@@ -75,13 +102,20 @@ def parse_data_file(audio_data_file):
   """
   data = []
   audio_data = open(audio_data_file)
+  max_value = 0
   for data_line in audio_data:
     if data_line.startswith(";"):
       continue
     current = data_line.strip().split()[1]
     current = float(current)
-    current = current * current
+    current = abs(current)
+    if current > max_value:
+      max_value = current
     data.append(current)
+  # Normalize everything
+  scale = (1 / max_value)
+  for i in range(len(data)):
+    data[i] = data[i] * scale
   return data
   
 def generate_audio_data(input_file):
@@ -110,12 +144,21 @@ def assemble_barcode(output_file,imagetype="jpg"):
 def main(input_file):
   (input_filename,_) = os.path.splitext(os.path.basename(input_file))
   create_and_enter_working_directory(input_file)
-  generate_frame_images(input_file,45)
+  add_image_height_hack_image()
+  framerate = get_framerate(input_file)
+  generate_frame_images(input_file,framerate)
   audio_data = generate_audio_data(input_file)
   for entry in os.listdir("."):
     if os.path.isfile(entry) and entry.endswith("jpg"):
+      # Turn a filename of the form 000032.jpg to 32
+      seconds = int(os.path.splitext(entry)[0])
+      # Hack to get around the image being smaller until it hits the max value
+      if seconds == 0:
+        final_height = 720
+      else:
+        final_height = int(audio_data[seconds] * 719) + 1
       resize(entry)
-      resize(entry,1,random.choice(range(500)))
+      resize(entry,1,final_height)
   assemble_barcode("barcode.png")
   output_filename = "%s (Soundbar).png" % input_filename
   output_filepath = os.path.join(os.path.dirname(input_file),output_filename)
