@@ -10,6 +10,7 @@ Copyright (c) 2013 Scott Rice. All rights reserved.
 import sys
 import os
 import shutil
+import random
 
 def temp_working_directory():
   """
@@ -57,18 +58,18 @@ def assemble_barcode(output_file,imagetype="jpg"):
   Converts all of the png files in the current directory into a single 
   moviebarcode.
   """
-  cmd = "montage -geometry +0+0 -tile x1 *.%s \"%s\""
+  cmd = "montage -geometry +0+0 -background \"rgb(221,221,220)\" -tile x1 *.%s \"%s\""
   cmd = cmd % (imagetype,output_file)
   os.system(cmd)
 
 def main(input_file):
   (input_filename,_) = os.path.splitext(os.path.basename(input_file))
   create_and_enter_working_directory(input_file)
-  generate_frame_images(input_file)
+  generate_frame_images(input_file,45)
   for entry in os.listdir("."):
     if os.path.isfile(entry):
       resize(entry)
-      resize(entry,1,500)
+      resize(entry,1,random.choice(range(500)))
   assemble_barcode("barcode.png")
   output_filename = "%s (Soundbar).png" % input_filename
   output_filepath = os.path.join(os.path.dirname(input_file),output_filename)
