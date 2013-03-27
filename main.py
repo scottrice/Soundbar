@@ -10,6 +10,7 @@ Copyright (c) 2013 Scott Rice. All rights reserved.
 import sys
 import os
 import shutil
+import random
 
 def temp_working_directory():
   """
@@ -22,7 +23,8 @@ def create_and_enter_working_directory(input_file):
   """
   Takes a filename and creates a blank working directory for this file to use.
   """
-  (filename,fileextension) = os.path.basename(os.path.splitext(input_file))
+  (filename,fileextension) = os.path.splitext(input_file)
+  filename = os.path.basename(filename)
   # The output directory should be the directory in which
   directory = os.path.join(temp_working_directory(),filename)
   # Remove everything that was previously at the target directory
@@ -38,7 +40,7 @@ def generate_frame_images(input_file,framestep=90,imagetype="jpeg"):
   Tells mplayer to generate an image of a frame in input_file every framestep
   frames.
   """
-  cmd = "mplayer -framedrop -speed 100 -vf framestep=%i -nosound -vo %s %s"
+  cmd = "mplayer -framedrop -speed 100 -vf framestep=%i -nosound -vo %s \"%s\""
   cmd = cmd % (framestep,imagetype,input_file)
   # Run the mplayer command
   os.system(cmd)
@@ -51,20 +53,27 @@ def resize(input_file,width=1,height=1):
   cmd = cmd % (input_file,width,height,input_file)
   os.system(cmd)
   
-def assemble_barcode(output_file,imagetype="jpeg"):
+def assemble_barcode(output_file,imagetype="jpg"):
   """
   Converts all of the png files in the current directory into a single 
   moviebarcode.
   """
-  os.system("montage -geometry +0+0 -tile x1 *.%s %s" % (imagetype,output_file))
+  cmd = "montage -geometry +0+0 -background \"rgb(221,221,220)\" -tile x1 *.%s \"%s\""
+  cmd = cmd % (imagetype,output_file)
+  os.system(cmd)
 
 def main(input_file):
+  (input_filename,_) = os.path.splitext(os.path.basename(input_file))
   create_and_enter_working_directory(input_file)
-  generate_frame_images(input_file)
+  generate_frame_images(input_file,45)
   for entry in os.listdir("."):
     if os.path.isfile(entry):
       resize(entry)
+      resize(entry,1,random.choice(range(500)))
   assemble_barcode("barcode.png")
+  output_filename = "%s (Soundbar).png" % input_filename
+  output_filepath = os.path.join(os.path.dirname(input_file),output_filename)
+  shutil.copy("barcode.png",output_filepath)
   
 
 if __name__ == '__main__':
@@ -72,6 +81,6 @@ if __name__ == '__main__':
   cwd = os.getcwd()
   # Do work
   if len(sys.argv):
-    main(sys.argv[1])
+    main(os.path.expanduser(sys.argv[1]))
   # Put the user back where they were
   os.chdir(cwd)
