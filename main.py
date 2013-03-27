@@ -66,7 +66,16 @@ def parse_data_file(audio_data_file):
   Converts a text file containing audio data into an array of audio information
   which can be used by our application
   """
-  pass
+  data = []
+  audio_data = open(audio_data_file)
+  for data_line in audio_data:
+    if data_line.startswith(";"):
+      continue
+    current = data_line.strip().split()[1]
+    current = float(current)
+    current = current * current
+    data.append(current)
+  return data
   
 def generate_audio_data(input_file):
   audio_file = extract_audio(input_file)
@@ -97,7 +106,7 @@ def main(input_file):
   generate_frame_images(input_file,45)
   audio_data = generate_audio_data(input_file)
   for entry in os.listdir("."):
-    if os.path.isfile(entry):
+    if os.path.isfile(entry) and entry.endswith("jpg"):
       resize(entry)
       resize(entry,1,random.choice(range(500)))
   assemble_barcode("barcode.png")
