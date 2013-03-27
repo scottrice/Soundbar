@@ -45,6 +45,35 @@ def generate_frame_images(input_file,framestep=90,imagetype="jpeg"):
   # Run the mplayer command
   os.system(cmd)
   
+def extract_audio(input_file):
+  """
+  Uses FFMpeg to extract the audio from a video file into a separate mp3
+  
+  returns the path to the created audio file
+  """
+  pass
+  
+def convert_audio_to_data_file(audio_file):
+  """
+  Converts an MP3 into a text file which contains the amplitude information
+  
+  returns the path to the data file
+  """
+  pass
+  
+def parse_data_file(audio_data_file):
+  """
+  Converts a text file containing audio data into an array of audio information
+  which can be used by our application
+  """
+  pass
+  
+def generate_audio_data(input_file):
+  audio_file = extract_audio(input_file)
+  audio_data_file = convert_audio_to_data_file(audio_file)
+  return parse_data_file(audio_data_file)
+  
+  
 def resize(input_file,width=1,height=1):
   """
   Resizes an image to width by height in place
@@ -66,6 +95,7 @@ def main(input_file):
   (input_filename,_) = os.path.splitext(os.path.basename(input_file))
   create_and_enter_working_directory(input_file)
   generate_frame_images(input_file,45)
+  audio_data = generate_audio_data(input_file)
   for entry in os.listdir("."):
     if os.path.isfile(entry):
       resize(entry)
