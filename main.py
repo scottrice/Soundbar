@@ -12,6 +12,7 @@ import os
 import shutil
 import random
 import commands
+import math
 
 first_filename = "00000000.jpg"
 execute_location = os.path.abspath(__file__)
@@ -45,14 +46,15 @@ def add_image_height_hack_image():
   hack_location = os.path.join(directory,first_filename)
   shutil.copy(hack_location,first_filename)
   
-def get_framerate(input_file):  
-  (status,output) = commands.getstatusoutput("ffprobe %s" % input_file)
-  for l in output:
+def get_framerate(input_file):
+  (status,output) = commands.getstatusoutput("ffprobe \"%s\"" % input_file)
+  for l in output.split("\n"):
     l = l.strip()
     if l.startswith("Stream"):
       # We are on the line which has our data, find it!
       probe_data = l.split(",")
       for datapoint in probe_data:
+        datapoint = datapoint.strip()
         if datapoint.endswith("fps"):
           separator_index = datapoint.find(" ")
           fps = float(datapoint[:separator_index])
@@ -96,6 +98,12 @@ def convert_audio_to_data_file(audio_file):
   os.system(cmd)
   return "audio.dat"
   
+def adjust_data_value(current):
+  current = abs(current)
+  # Found through trial and error
+  current = 44.693 * math.log((10000000 * current) + 1,10)
+  return current
+  
 def parse_data_file(audio_data_file):
   """
   Converts a text file containing audio data into an array of audio information
@@ -103,20 +111,12 @@ def parse_data_file(audio_data_file):
   """
   data = []
   audio_data = open(audio_data_file)
-  max_value = 0
   for data_line in audio_data:
     if data_line.startswith(";"):
       continue
     current = data_line.strip().split()[1]
     current = float(current)
-    current = abs(current)
-    if current > max_value:
-      max_value = current
-    data.append(current)
-  # Normalize everything
-  scale = (1 / max_value)
-  for i in range(len(data)):
-    data[i] = data[i] * scale
+    data.append(adjust_data_value(current))
   return data
   
 def generate_audio_data(input_file):
@@ -157,7 +157,11 @@ def main(input_file):
       if seconds == 0:
         final_height = 720
       else:
-        final_height = int(audio_data[seconds] * 719) + 1
+        try:
+          final_height = int(audio_data[seconds-1]) + 1
+        except:
+          # If something goes wrong, just make it unnoticeable
+          final_height = 1
       resize(entry)
       resize(entry,1,final_height)
   assemble_barcode("barcode.png")
