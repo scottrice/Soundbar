@@ -22,7 +22,8 @@ def create_and_enter_working_directory(input_file):
   """
   Takes a filename and creates a blank working directory for this file to use.
   """
-  (filename,fileextension) = os.path.basename(os.path.splitext(input_file))
+  (filename,fileextension) = os.path.splitext(input_file)
+  filename = os.path.basename(filename)
   # The output directory should be the directory in which
   directory = os.path.join(temp_working_directory(),filename)
   # Remove everything that was previously at the target directory
@@ -73,6 +74,6 @@ if __name__ == '__main__':
   cwd = os.getcwd()
   # Do work
   if len(sys.argv):
-    main(sys.argv[1])
+    main(os.path.expanduser(sys.argv[1]))
   # Put the user back where they were
   os.chdir(cwd)
