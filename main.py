@@ -64,6 +64,7 @@ def main(input_file):
   for entry in os.listdir("."):
     if os.path.isfile(entry):
       resize(entry)
+      resize(entry,1,500)
   assemble_barcode("barcode.png")
   
 
