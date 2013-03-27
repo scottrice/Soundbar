@@ -79,7 +79,7 @@ def extract_audio(input_file):
   
   returns the path to the created audio file
   """
-  cmd = "ffmpeg -i %s -ab 160k -ac 1 -ar 44100 -vn audio.mp3"
+  cmd = "ffmpeg -i \"%s\" -ab 160k -ac 1 -ar 44100 -vn audio.mp3"
   cmd = cmd % (input_file)
   # Run the ffmpeg command #yolo
   os.system(cmd)
@@ -91,7 +91,7 @@ def convert_audio_to_data_file(audio_file):
   
   returns the path to the data file
   """
-  cmd = "sox %s -r 1 audio.dat"
+  cmd = "sox \"%s\" -r 1 audio.dat"
   cmd = cmd % (audio_file)
   os.system(cmd)
   return "audio.dat"
