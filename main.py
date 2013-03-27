@@ -14,6 +14,7 @@ import random
 import commands
 
 first_filename = "00000000.jpg"
+execute_location = os.path.abspath(__file__)
 
 def temp_working_directory():
   """
@@ -40,7 +41,7 @@ def create_and_enter_working_directory(input_file):
   
 def add_image_height_hack_image():
   # Get the directory of the executing file
-  directory = os.path.dirname(__file__)
+  directory = os.path.dirname(execute_location)
   hack_location = os.path.join(directory,first_filename)
   shutil.copy(hack_location,first_filename)
   
