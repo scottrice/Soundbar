@@ -39,7 +39,7 @@ def generate_frame_images(input_file,framestep=90,imagetype="jpeg"):
   Tells mplayer to generate an image of a frame in input_file every framestep
   frames.
   """
-  cmd = "mplayer -framedrop -speed 100 -vf framestep=%i -nosound -vo %s %s"
+  cmd = "mplayer -framedrop -speed 100 -vf framestep=%i -nosound -vo %s \"%s\""
   cmd = cmd % (framestep,imagetype,input_file)
   # Run the mplayer command
   os.system(cmd)
@@ -52,14 +52,17 @@ def resize(input_file,width=1,height=1):
   cmd = cmd % (input_file,width,height,input_file)
   os.system(cmd)
   
-def assemble_barcode(output_file,imagetype="jpeg"):
+def assemble_barcode(output_file,imagetype="jpg"):
   """
   Converts all of the png files in the current directory into a single 
   moviebarcode.
   """
-  os.system("montage -geometry +0+0 -tile x1 *.%s %s" % (imagetype,output_file))
+  cmd = "montage -geometry +0+0 -tile x1 *.%s \"%s\""
+  cmd = cmd % (imagetype,output_file)
+  os.system(cmd)
 
 def main(input_file):
+  (input_filename,_) = os.path.splitext(os.path.basename(input_file))
   create_and_enter_working_directory(input_file)
   generate_frame_images(input_file)
   for entry in os.listdir("."):
@@ -67,6 +70,9 @@ def main(input_file):
       resize(entry)
       resize(entry,1,500)
   assemble_barcode("barcode.png")
+  output_filename = "%s (Soundbar).png" % input_filename
+  output_filepath = os.path.join(os.path.dirname(input_file),output_filename)
+  shutil.copy("barcode.png",output_filepath)
   
 
 if __name__ == '__main__':
