@@ -14,7 +14,7 @@ imagemagick
 sox
 
 The script that does the work is main.py. Usage:
-python main.py /path/to/movie.avi
+./main.py /path/to/movie.avi
 
 It will do processing on the input movie and output a png.
 We create this color waveform through the sound and amplitude for each frame. 
